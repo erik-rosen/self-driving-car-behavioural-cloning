@@ -86,7 +86,7 @@ To make sure we had training data where the steering angle is less biased around
 
 To make use of these images for training, we treat the left and right camera images as though they were captured from the center camera and apply a correction factor to the measured steering angle. The correction angle is computed by assuming that if the model sees an image that is 1 meter off the center lane axis, the model should aim to apply a steering output that gets back to the center after travelling 20 meters along the track.
 
-![alt text][image4] 
+![alt text][image5] 
 
 This correction factor is computed in lines 35-40 in model.py.
 
