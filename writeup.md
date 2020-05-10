@@ -114,6 +114,6 @@ I trained the model using a mean squared error loss function and the adam optimi
 
 The final step was to run the simulator to see how well the car was driving around track one. The car successfully drove one full lap without leaving the road:
 
-[image2]: ./images/autonomous_driving.gif "Autonomous Driving"
+![alt text][image2]
 
 Full video of the lap can be seen [here](run1.mp4)
