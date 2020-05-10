@@ -56,7 +56,7 @@ My model employs the same model as described in this [paper](http://images.nvidi
 
 ![alt text][image4]
 
-The input data is normalized in the model using a Keras lambda layer (code line 87) - this ensures that the input pixel values for the image are approximately zero mean and of unit variance. After that, we crop the input image to remove sections of the camera that capture scenery which may confuse the model and is not helful for navigation (trees, mountains, and other terrain in the distance etc).
+The input data is normalized in the model using a Keras lambda layer (code line 87) - this ensures that the input pixel values for the image are approximately zero mean and of unit variance. After that, we crop the input image to remove sections of the camera that capture scenery which may confuse the model and is not helful for navigation (the hood of the car, trees, mountains, and other terrain in the distance etc).
 
 #### 2. Attempts to reduce overfitting in the model
 
@@ -76,58 +76,46 @@ Looking at the training data provided, we can see that the steering angle is mos
 
 ![alt text][image1]
 
-We will need to generate data that teaches the car to actually recover if it needs to. A model that knows how to drive in a straight line, but does not know how to recover if it gets off track is fairly useless. To read more about how I went about genrating training data, go to "Creation of the Training Set & Training Process" below.
+With training data where the steering angle is mostly 0, there is a risk that the model will not learn how to actually steer: a model which will always predict 0 (steer straight) would perform pretty well on this dataset. We will need to generate data that ensures that the model actually learns to recover. A model that knows how to drive in a straight line, but does not know how to recover if it gets off track is fairly useless. 
+
+Note that there is no skewness in the distribution (the third central moment is close to 0), so generating "mirrored" training data is not necessary. To read more about how I went about genrating training data, see "Creation of the Training Set & Training Process" below.
 
 ### Model Architecture and Training Strategy
 
 #### 1. Creation of the Training Set & Training Process
 
-To capture good driving behavior, I first recorded two laps on track one using center lane driving. Here is an example image of center lane driving:
+To make sure we had training data where the steering angle is less biased around 0, I chose to utilize the camera images from the left and right images in addition to the central camera (the car is capturing camera images from 3 forward facing cameras, one offset about 1 meter to the left from the center axis, one in the center and one offset 1 meter to the right). 
+
+To make use of these images for training, we treat the left and right camera images as though they were captured from the center camera and apply a correction factor to the measured steering angle. The correction angle is computed by assuming that if the model sees an image that is 1 meter off the center lane axis, the model should aim to apply a steering output that gets back to the center after travelling 20 meters along the track.
+
+![alt text][image4] 
+
+This correction factor is computed in lines 35-40 in model.py.
+
+For every sample used for training, we draw from the left, center or right camera with equal probability and apply the correction factor associated with the offset of the camera to the measurement. See lines 53-73 in model.py.
 
 #### 2. Solution Design Approach
 
-The overall strategy for deriving a model architecture was to ...
+The overall strategy for deriving a model architecture was to base it off a model with known good performance for this task. 
 
-My first step was to use a convolution neural network model similar to the ... I thought this model might be appropriate because ...
+My first step was to use a convolution neural network architecture similar to this [paper](http://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf). 
 
-In order to gauge how well the model was working, I split my image and steering angle data into a training and validation set. I found that my first model had a low mean squared error on the training set but a high mean squared error on the validation set. This implied that the model was overfitting. 
+Below is a figure displaying the architecture:
 
-To combat the overfitting, I modified the model so that ...
+![alt text][image4]
 
-Then I ... 
+The model is defined in lines 85-99 in model.py. The input data is normalized in the model using a Keras lambda layer (code line 87) - this ensures that the input pixel values for the image are approximately zero mean and of approximately unit variance. After that, we crop the input image to remove sections of the camera that capture scenery which may confuse the model and is not helful for navigation (the hood of the car, trees, mountains, and other terrain in the distance etc). 
 
-The final step was to run the simulator to see how well the car was driving around track one. There were a few spots where the vehicle fell off the track... to improve the driving behavior in these cases, I ....
+In order to gauge how well the model was working, I split my image and steering angle data into a training and validation set. Code line 32 in model.py splits off the 4/5ths of labeled data into a training and a 1/5th to a validation set. Given that we have no hyperparameters that we are tuning, I chose not to use a test set. 
 
-At the end of the process, the vehicle is able to drive autonomously around the track without leaving the road.
+I initially chose to use batch gradient descent with a batch size of 32. The batches are loaded using a generator defined in lines 34-77 in model.py. The generator shuffles the dataset each epoch - see line 45. 
 
-#### 3. Final Model Architecture
-
-The final model architecture (model.py lines 18-24) consisted of a convolution neural network with the following layers and layer sizes ...
-
-Here is a visualization of the architecture (note: visualizing the architecture is optional according to the project rubric)
-
-![alt text][image1]
-
-![alt text][image2]
-
-I then recorded the vehicle recovering from the left side and right sides of the road back to center so that the vehicle would learn to .... These images show what a recovery looks like starting from ... :
+I trained the model using a mean squared error loss function and the adam optimizer (see lines 101-102 in model.py). Plotting the MSE on the validation and the training set against the training epochs (lines 113-121 in model.py), we can see that the model actually performs better on the validation set than on the training set - indicating that there is no overfitting happening:
 
 ![alt text][image3]
-![alt text][image4]
-![alt text][image5]
 
-Then I repeated this process on track two in order to get more data points.
+The final step was to run the simulator to see how well the car was driving around track one. The car successfully drove one full lap without leaving the road:
 
-To augment the data sat, I also flipped images and angles thinking that this would ... For example, here is an image that has then been flipped:
+[image2]: ./images/autonomous_driving.gif "Autonomous Driving"
 
-![alt text][image6]
-![alt text][image7]
-
-Etc ....
-
-After the collection process, I had X number of data points. I then preprocessed this data by ...
-
-
-I finally randomly shuffled the data set and put Y% of the data into a validation set. 
-
-I used this training data for training the model. The validation set helped determine if the model was over or under fitting. The ideal number of epochs was Z as evidenced by ... I used an adam optimizer so that manually training the learning rate wasn't necessary.
+Full video of the lap can be seen [here](run1.mp4)
