@@ -52,9 +52,7 @@ The model.py file contains the code for training and saving the convolution neur
 
 #### 1. An appropriate model architecture has been employed
 
-My model employs the same model as described in this [paper](http://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf). Below is a figure displaying the architecture:
-
-![alt text][image4]
+My model employs the same model as described in this [paper](http://images.nvidia.com/content/tegra/automotive/images/2016/solutions/pdf/end-to-end-dl-using-px.pdf).
 
 The input data is normalized in the model using a Keras lambda layer (code line 87) - this ensures that the input pixel values for the image are approximately zero mean and of unit variance. After that, we crop the input image to remove sections of the camera that capture scenery which may confuse the model and is not helful for navigation (the hood of the car, trees, mountains, and other terrain in the distance etc).
 
@@ -110,7 +108,7 @@ In order to gauge how well the model was working, I split my image and steering 
 
 I initially chose to use batch gradient descent with a batch size of 32. The batches are loaded using a generator defined in lines 34-77 in model.py. The generator shuffles the dataset each epoch - see line 45. 
 
-I trained the model using a mean squared error loss function and the adam optimizer (see lines 101-102 in model.py). Plotting the MSE on the validation and the training set against the training epochs (lines 113-121 in model.py), we can see that the model actually performs better on the validation set than on the training set - indicating that there is no overfitting happening:
+I trained the model using a mean squared error loss function and the adam optimizer (see lines 101-102 in model.py). Plotting the MSE on the validation and the training set against the training epochs (lines 113-121 in model.py), we can see that the model actually performs better on the validation set than on the training set - indicating that there is no overfitting happening. We also note that the loss of the validation set does not seem to improve much more past the second epoch, so we could have terminated training there.
 
 ![alt text][image3]
 
